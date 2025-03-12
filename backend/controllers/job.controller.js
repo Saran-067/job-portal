@@ -36,18 +36,37 @@ export const postJob = async (req, res) => {
 
 export const getAllJobs = async (req, res) => {
     try {
-        const { Location, Industry, Salary } = req.query; // Extract filters from query params
+        const { search, location, jobType, salary, experience } = req.query; // Extract search and filters from query params
 
         let query = {};
 
-        if (Location) {
-            query.location = { $regex: Location, $options: "i" };
+        // Search by title, company name, or job type
+        if (search) {
+            query.$or = [
+                { title: { $regex: search, $options: "i" } },
+                { 'company.name': { $regex: search, $options: "i" } },
+                { jobType: { $regex: search, $options: "i" } },
+            ];
         }
-        if (Industry) {
-            query.industry = { $regex: Industry, $options: "i" };
+
+        // Filter by location
+        if (location) {
+            query.location = { $regex: location, $options: "i" };
         }
-        if (Salary) {
-            query.salary = { $regex: Salary, $options: "i" };
+
+        // Filter by job type
+        if (jobType) {
+            query.jobType = { $regex: jobType, $options: "i" };
+        }
+
+        // Filter by salary
+        if (salary) {
+            query.salary = Number(salary);
+        }
+
+        // Filter by experience (corrected field name)
+        if (experience) {
+            query.experienceLevel = { $regex: experience, $options: "i" };
         }
 
         const jobs = await Job.find(query).populate("company").sort({ createdAt: -1 });
@@ -68,7 +87,6 @@ export const getAllJobs = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", success: false });
     }
 };
-
 // student
 export const getJobById = async (req, res) => {
     try {
