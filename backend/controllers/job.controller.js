@@ -36,30 +36,39 @@ export const postJob = async (req, res) => {
 
 export const getAllJobs = async (req, res) => {
     try {
-        const keyword = req.query.keyword || "";
-        const query = {
-            $or: [
-                { title: { $regex: keyword, $options: "i" } },
-                { description: { $regex: keyword, $options: "i" } },
-            ]
-        };
-        const jobs = await Job.find(query).populate({
-            path: "company"
-        }).sort({ createdAt: -1 });
-        if (!jobs) {
+        const { Location, Industry, Salary } = req.query; // Extract filters from query params
+
+        let query = {};
+
+        if (Location) {
+            query.location = { $regex: Location, $options: "i" };
+        }
+        if (Industry) {
+            query.industry = { $regex: Industry, $options: "i" };
+        }
+        if (Salary) {
+            query.salary = { $regex: Salary, $options: "i" };
+        }
+
+        const jobs = await Job.find(query).populate("company").sort({ createdAt: -1 });
+
+        if (!jobs.length) {
             return res.status(404).json({
                 message: "Jobs not found.",
                 success: false
-            })
-        };
+            });
+        }
+
         return res.status(200).json({
             jobs,
             success: true
-        })
+        });
     } catch (error) {
-        console.log(error);
+        console.error(error);
+        res.status(500).json({ message: "Internal Server Error", success: false });
     }
-}
+};
+
 // student
 export const getJobById = async (req, res) => {
     try {

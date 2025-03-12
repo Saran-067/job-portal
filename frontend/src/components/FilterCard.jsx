@@ -4,66 +4,80 @@ import { Label } from './ui/label';
 import { useDispatch } from 'react-redux';
 import { setSearchedQuery } from '@/redux/jobSlice';
 
-const filterData = [
+const initialFilterData = [
     {
         filterType: "Location",
-        array: ["Delhi NCR", "Bangalore", "Hyderabad", "Pune", "Mumbai"]
+        options: ["Delhi NCR", "Bangalore", "Hyderabad", "Pune", "Mumbai"]
     },
     {
         filterType: "Industry",
-        array: ["Frontend Developer", "Backend Developer", "FullStack Developer"]
+        options: ["Frontend Developer", "Backend Developer", "FullStack Developer"]
     },
     {
         filterType: "Salary",
-        array: ["0-40k", "42-1lakh", "1lakh to 5lakh"]
+        options: ["0-40k", "42k-1lakh", "1lakh to 5lakh"]
     },
 ];
 
 const FilterCard = () => {
-    const [selectedValue, setSelectedValue] = useState('');
-    const [searchQueries, setSearchQueries] = useState({
-        Location: '',
-        Industry: '',
-        Salary: ''
-    });
+    const [filterData, setFilterData] = useState(initialFilterData);
+    const [searchFilterQuery, setSearchFilterQuery] = useState('');
+    const [searchQueries, setSearchQueries] = useState({});
+    const [selectedFilters, setSelectedFilters] = useState({});
     const dispatch = useDispatch();
 
-    const changeHandler = (value) => {
-        setSelectedValue(value);
-    };
+    useEffect(() => {
+        const filteredData = initialFilterData.map(category => ({
+            ...category,
+            options: category.options.filter(option =>
+                option.toLowerCase().includes(searchFilterQuery.toLowerCase())
+            )
+        }));
+        setFilterData(filteredData);
+    }, [searchFilterQuery]);
 
     const searchHandler = (filterType, query) => {
         setSearchQueries((prev) => ({ ...prev, [filterType]: query }));
     };
 
+    const filterChangeHandler = (filterType, value) => {
+        setSelectedFilters((prev) => ({ ...prev, [filterType]: value }));
+    };
+
     useEffect(() => {
-        dispatch(setSearchedQuery(selectedValue));
-    }, [selectedValue, dispatch]);
+        dispatch(setSearchedQuery(selectedFilters));
+    }, [selectedFilters, dispatch]);
 
     return (
         <div className='w-full bg-white p-3 rounded-md'>
             <h1 className='font-bold text-lg'>Filter Jobs</h1>
+            <input
+                type='text'
+                placeholder='Search filters...'
+                className='border p-1 mt-2 w-full rounded-md'
+                value={searchFilterQuery}
+                onChange={(e) => setSearchFilterQuery(e.target.value)}
+            />
             <hr className='mt-3' />
-            <RadioGroup value={selectedValue} onValueChange={changeHandler}>
-                {filterData.map((data, index) => (
-                    <div key={index}>
-                        <h1 className='font-bold text-lg'>{data.filterType}</h1>
+            {filterData.map((data, index) => (
+                <div key={index} className='mt-4'>
+                    <h1 className='font-bold text-lg'>{data.filterType}</h1>
 
-                        {/* Search bar for each filter category */}
-                        <input
-                            type="text"
-                            placeholder={`Search ${data.filterType}...`}
-                            className="border p-1 mt-2 w-full rounded-md"
-                            value={searchQueries[data.filterType]}
-                            onChange={(e) =>
-                                searchHandler(data.filterType, e.target.value)
-                            }
-                        />
+                    <input
+                        type='text'
+                        placeholder={`Search ${data.filterType}...`}
+                        className='border p-1 mt-2 w-full rounded-md'
+                        value={searchQueries[data.filterType] || ''}
+                        onChange={(e) => searchHandler(data.filterType, e.target.value)}
+                    />
 
-                        {/* Filter options */}
-                        {data.array
+                    <RadioGroup
+                        value={selectedFilters[data.filterType] || ''}
+                        onValueChange={(value) => filterChangeHandler(data.filterType, value)}
+                    >
+                        {data.options
                             .filter((item) =>
-                                item.toLowerCase().includes(searchQueries[data.filterType].toLowerCase())
+                                item.toLowerCase().includes((searchQueries[data.filterType] || '').toLowerCase())
                             )
                             .map((item, idx) => {
                                 const itemId = `id${index}-${idx}`;
@@ -74,9 +88,9 @@ const FilterCard = () => {
                                     </div>
                                 );
                             })}
-                    </div>
-                ))}
-            </RadioGroup>
+                    </RadioGroup>
+                </div>
+            ))}
         </div>
     );
 };
