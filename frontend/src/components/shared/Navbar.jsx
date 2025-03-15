@@ -86,20 +86,19 @@ const Navbar = () => {
                     {/* Auth Buttons or User Avatar */}
                     {!user ? (
                         <div className="flex items-center gap-4">
-                            <Link to="/login">
-                                <Button
-                                    variant="outline"
-                                    className="text-white border-white hover:bg-[#F83002] hover:border-[#F83002] transition-colors duration-300"
-                                >
-                                    Login
-                                </Button>
-                            </Link>
-                            <Link to="/signup">
-                                <Button className="bg-[#6A38C2] hover:bg-[#5b30a6] transition-colors duration-300">
-                                    Signup
-                                </Button>
-                            </Link>
-                        </div>
+                        <Link to="/login">
+                            <Button
+                                className="text-white border border-white hover:bg-[#F83002] hover:border-[#F83002] hover:text-white transition-colors duration-300 px-6 py-2 rounded-md"
+                            >
+                                Login
+                            </Button>
+                        </Link>
+                        <Link to="/signup">
+                            <Button className="bg-[#6A38C2] hover:bg-[#5b30a6] text-white px-6 py-2 rounded-md transition-colors duration-300">
+                                Signup
+                            </Button>
+                        </Link>
+                    </div>
                     ) : (
                         <Popover>
                             <PopoverTrigger asChild>
