@@ -16,10 +16,24 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(cors({
-    origin: "https://your-frontend-url.com",
-    credentials: true
-}));
+const allowedOrigins = [
+    "https://job-portal-6kb0s31im-sarans-projects-eb4f9fb3.vercel.app",
+    "https://job-portal-pi-brown.vercel.app" // Add all your frontend URLs here
+];
+
+app.use(
+    cors({
+        origin: function (origin, callback) {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error("Not allowed by CORS"));
+            }
+        },
+        credentials: true,
+    })
+);
+
 const PORT=10000|| process.env.PORT;
 // Session setup
 app.use(session({
