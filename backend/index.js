@@ -20,7 +20,7 @@ app.use(cors({
     origin: "https://your-frontend-url.com",
     credentials: true
 }));
-
+const PORT=10000|| process.env.PORT;
 // Session setup
 app.use(session({
     secret: process.env.SESSION_SECRET || "your_strong_secret_key",
