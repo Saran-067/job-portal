@@ -1,5 +1,5 @@
 import express from "express";
-import cookieParser from "cookie-parser";
+import session from "express-session";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./utils/db.js";
@@ -14,27 +14,37 @@ const app = express();
 
 // middleware
 app.use(express.json());
-app.use(express.urlencoded({extended:true}));
-app.use(cookieParser());
-const corsOptions = {
-    origin:'https://job-portal-pi-brown.vercel.app',
-    credentials:true
-}
+app.use(express.urlencoded({ extended: true }));
 
+const corsOptions = {
+    origin: 'https://job-portal-pi-brown.vercel.app',
+    credentials: true
+};
 app.use(cors(corsOptions));
+
+// Session Middleware
+app.use(
+    session({
+        secret: process.env.SESSION_SECRET || "your_secret_key",
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            secure: process.env.NODE_ENV === "production", // Set to true in production with HTTPS
+            httpOnly: true,
+            maxAge: 1000 * 60 * 60 * 24, // 1 day
+        }
+    })
+);
 
 const PORT = process.env.PORT || 10000;
 
-
-// api's
+// API Routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/company", companyRoute);
 app.use("/api/v1/job", jobRoute);
 app.use("/api/v1/application", applicationRoute);
 
-
-
-app.listen(PORT,()=>{
+app.listen(PORT, () => {
     connectDB();
     console.log(`Server running at port ${PORT}`);
-})
+});
