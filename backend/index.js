@@ -19,28 +19,36 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+app.set("trust proxy", 1); // Trust proxies to handle cookies correctly
+
 const corsOptions = {
-    origin: 'https://job-portal-nine-psi.vercel.app',
-    credentials: true
+    origin: 'https://job-portal-nine-psi.vercel.app',  
+    credentials: true,
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    allowedHeaders: ["Content-Type", "Authorization"],
 };
 app.use(cors(corsOptions));
 
+// app.use(cors(corsOptions));
+
 // Session Configuration
 app.use(session({
-    secret: process.env.SESSION_SECRET, // Replace with a strong secret
+    secret: process.env.SESSION_SECRET, 
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
-        mongoUrl: process.env.MONGO_URI, // Your MongoDB connection string
-        collectionName: "sessions"
+        mongoUrl: process.env.MONGO_URI,
+        collectionName: "sessions",
+        ttl: 24 * 60 * 60, // 1 day expiry
     }),
     cookie: {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production", // Secure cookies in production
-        sameSite: "strict",
-        maxAge: 24 * 60 * 60 * 1000 // 1 day
+        secure: process.env.NODE_ENV === "production", // Ensure secure cookies in production
+        sameSite: "none", // Required for cross-origin sessions
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
     }
 }));
+
 
 const PORT = process.env.PORT ;
 
