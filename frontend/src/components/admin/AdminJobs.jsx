@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux'; 
 import AdminJobsTable from './AdminJobsTable';
 import { setSearchJobByText } from '@/redux/jobSlice';
-import API from "../utils/axiosConfig";
+import API from "@/utils/axiosConfig";
 
 const AdminJobs = () => {
   const [input, setInput] = useState("");
