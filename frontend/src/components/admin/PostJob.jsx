@@ -5,16 +5,16 @@ import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { useSelector } from 'react-redux';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import axios from 'axios';
-import { JOB_API_END_POINT } from '@/utils/constant';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
+import API from "../utils/axiosConfig";
+import { JOB_API_END_POINT } from '@/utils/constant';
 
-// Predefined options for location, job type, salary, and experience level
+// Predefined options
 const locations = ['Mumbai', 'Chennai', 'Bangalore', 'Pune', 'Hyderabad', 'Delhi'];
 const jobTypes = ['Frontend Developer', 'Backend Developer', 'Data Science', 'Graphic Designer', 'FullStack Developer'];
-const salaries = [5, 6, 7, 8, 12, 15, 20, 50]; // Salary options in LPA
+const salaries = [5, 6, 7, 8, 12, 15, 20, 50];
 const experienceLevels = ['Fresher', '1-2 years', '3-5 years', '5+ years'];
 
 const PostJob = () => {
@@ -29,59 +29,40 @@ const PostJob = () => {
         position: 0,
         companyId: '',
     });
+
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-
     const { companies } = useSelector((store) => store.company);
 
-    // Handle input change for text fields
+    // Handle input change
     const changeEventHandler = (e) => {
-        setInput({ ...input, [e.target.name]: e.target.value });
+        setInput((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    // Handle select change for company
-    const selectCompanyHandler = (value) => {
-        const selectedCompany = companies.find((company) => company.name.toLowerCase() === value);
-        setInput({ ...input, companyId: selectedCompany._id });
+    // Dropdown handlers
+    const handleSelectChange = (key, value) => {
+        setInput((prev) => ({ ...prev, [key]: value }));
     };
 
-    // Handle select change for location
-    const selectLocationHandler = (value) => {
-        setInput({ ...input, location: value });
-    };
-
-    // Handle select change for job type
-    const selectJobTypeHandler = (value) => {
-        setInput({ ...input, jobType: value });
-    };
-
-    // Handle select change for salary
-    const selectSalaryHandler = (value) => {
-        setInput({ ...input, salary: value });
-    };
-
-    // Handle select change for experience level
-    const selectExperienceHandler = (value) => {
-        setInput({ ...input, experience: value });
-    };
-
-    // Handle form submission
+    // Submit handler
     const submitHandler = async (e) => {
         e.preventDefault();
+
+        if (!input.companyId) {
+            toast.error("Please select a company before posting a job.");
+            return;
+        }
+
         try {
             setLoading(true);
-            const res = await axios.post(`${JOB_API_END_POINT}/post`, input, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                withCredentials: true,
-            });
-            if (res.data.success) {
+            const res = await API.post(`${JOB_API_END_POINT}/post`, input, { withCredentials: true });
+
+            if (res?.data?.success) {
                 toast.success(res.data.message);
                 navigate('/admin/jobs');
             }
         } catch (error) {
-            toast.error(error.response.data.message);
+            toast.error(error?.response?.data?.message || "Something went wrong.");
         } finally {
             setLoading(false);
         }
@@ -96,109 +77,83 @@ const PostJob = () => {
                         {/* Title */}
                         <div>
                             <Label>Title</Label>
-                            <Input
-                                type="text"
-                                name="title"
-                                value={input.title}
-                                onChange={changeEventHandler}
-                                className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
-                            />
+                            <Input type="text" name="title" value={input.title} onChange={changeEventHandler} className="my-1" />
                         </div>
 
                         {/* Description */}
                         <div>
                             <Label>Description</Label>
-                            <Input
-                                type="text"
-                                name="description"
-                                value={input.description}
-                                onChange={changeEventHandler}
-                                className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
-                            />
+                            <Input type="text" name="description" value={input.description} onChange={changeEventHandler} className="my-1" />
                         </div>
 
                         {/* Requirements */}
                         <div>
                             <Label>Requirements</Label>
-                            <Input
-                                type="text"
-                                name="requirements"
-                                value={input.requirements}
-                                onChange={changeEventHandler}
-                                className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
-                            />
+                            <Input type="text" name="requirements" value={input.requirements} onChange={changeEventHandler} className="my-1" />
                         </div>
 
-                        {/* Salary (Dropdown) */}
+                        {/* Salary */}
                         <div>
                             <Label>Salary (LPA)</Label>
-                            <Select onValueChange={selectSalaryHandler}>
-                                <SelectTrigger className="w-full focus-visible:ring-offset-0 focus-visible:ring-0 my-1">
+                            <Select value={input.salary} onValueChange={(value) => handleSelectChange("salary", value)}>
+                                <SelectTrigger className="w-full my-1">
                                     <SelectValue placeholder="Select Salary" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
                                         {salaries.map((salary) => (
-                                            <SelectItem key={salary} value={salary.toString()}>
-                                                {salary} LPA
-                                            </SelectItem>
+                                            <SelectItem key={salary} value={salary.toString()}>{salary} LPA</SelectItem>
                                         ))}
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
                         </div>
 
-                        {/* Location (Dropdown) */}
+                        {/* Location */}
                         <div>
                             <Label>Location</Label>
-                            <Select onValueChange={selectLocationHandler}>
-                                <SelectTrigger className="w-full focus-visible:ring-offset-0 focus-visible:ring-0 my-1">
+                            <Select value={input.location} onValueChange={(value) => handleSelectChange("location", value)}>
+                                <SelectTrigger className="w-full my-1">
                                     <SelectValue placeholder="Select Location" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
                                         {locations.map((location) => (
-                                            <SelectItem key={location} value={location}>
-                                                {location}
-                                            </SelectItem>
+                                            <SelectItem key={location} value={location}>{location}</SelectItem>
                                         ))}
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
                         </div>
 
-                        {/* Job Type (Dropdown) */}
+                        {/* Job Type */}
                         <div>
                             <Label>Job Type</Label>
-                            <Select onValueChange={selectJobTypeHandler}>
-                                <SelectTrigger className="w-full focus-visible:ring-offset-0 focus-visible:ring-0 my-1">
+                            <Select value={input.jobType} onValueChange={(value) => handleSelectChange("jobType", value)}>
+                                <SelectTrigger className="w-full my-1">
                                     <SelectValue placeholder="Select Job Type" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
                                         {jobTypes.map((jobType) => (
-                                            <SelectItem key={jobType} value={jobType}>
-                                                {jobType}
-                                            </SelectItem>
+                                            <SelectItem key={jobType} value={jobType}>{jobType}</SelectItem>
                                         ))}
                                     </SelectGroup>
                                 </SelectContent>
                             </Select>
                         </div>
 
-                        {/* Experience Level (Dropdown) */}
+                        {/* Experience Level */}
                         <div>
                             <Label>Experience Level</Label>
-                            <Select onValueChange={selectExperienceHandler}>
-                                <SelectTrigger className="w-full focus-visible:ring-offset-0 focus-visible:ring-0 my-1">
+                            <Select value={input.experience} onValueChange={(value) => handleSelectChange("experience", value)}>
+                                <SelectTrigger className="w-full my-1">
                                     <SelectValue placeholder="Select Experience Level" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectGroup>
                                         {experienceLevels.map((experience) => (
-                                            <SelectItem key={experience} value={experience}>
-                                                {experience}
-                                            </SelectItem>
+                                            <SelectItem key={experience} value={experience}>{experience}</SelectItem>
                                         ))}
                                     </SelectGroup>
                                 </SelectContent>
@@ -208,29 +163,21 @@ const PostJob = () => {
                         {/* Number of Positions */}
                         <div>
                             <Label>Number of Positions</Label>
-                            <Input
-                                type="number"
-                                name="position"
-                                value={input.position}
-                                onChange={changeEventHandler}
-                                className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
-                            />
+                            <Input type="number" name="position" value={input.position} onChange={changeEventHandler} className="my-1" />
                         </div>
 
-                        {/* Company (Dropdown) */}
+                        {/* Company Selection */}
                         {companies.length > 0 && (
                             <div>
                                 <Label>Company</Label>
-                                <Select onValueChange={selectCompanyHandler}>
-                                    <SelectTrigger className="w-full focus-visible:ring-offset-0 focus-visible:ring-0 my-1">
+                                <Select value={input.companyId} onValueChange={(value) => handleSelectChange("companyId", value)}>
+                                    <SelectTrigger className="w-full my-1">
                                         <SelectValue placeholder="Select a Company" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectGroup>
                                             {companies.map((company) => (
-                                                <SelectItem key={company._id} value={company.name.toLowerCase()}>
-                                                    {company.name}
-                                                </SelectItem>
+                                                <SelectItem key={company._id} value={company._id}>{company.name}</SelectItem>
                                             ))}
                                         </SelectGroup>
                                     </SelectContent>
@@ -240,22 +187,12 @@ const PostJob = () => {
                     </div>
 
                     {/* Submit Button */}
-                    {loading ? (
-                        <Button className="w-full my-4" disabled>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait
-                        </Button>
-                    ) : (
-                        <Button type="submit" className="w-full my-4">
-                            Post New Job
-                        </Button>
-                    )}
+                    <Button type="submit" className="w-full my-4" disabled={loading || companies.length === 0}>
+                        {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Post New Job"}
+                    </Button>
 
-                    {/* Error Message if No Companies Exist */}
-                    {companies.length === 0 && (
-                        <p className="text-xs text-red-600 font-bold text-center my-3">
-                            *Please register a company first, before posting a job.
-                        </p>
-                    )}
+                    {/* No Company Warning */}
+                    {companies.length === 0 && <p className="text-xs text-red-600 font-bold text-center my-3">*Please register a company first.</p>}
                 </form>
             </div>
         </div>

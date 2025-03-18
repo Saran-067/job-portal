@@ -1,22 +1,37 @@
-import React, { useEffect, useState } from 'react'
-import Navbar from '../shared/Navbar'
-import { Input } from '../ui/input'
-import { Button } from '../ui/button' 
-import { useNavigate } from 'react-router-dom' 
-import { useDispatch } from 'react-redux' 
-import AdminJobsTable from './AdminJobsTable'
-import useGetAllAdminJobs from '@/hooks/useGetAllAdminJobs'
-import { setSearchJobByText } from '@/redux/jobSlice'
+import React, { useEffect, useState } from 'react';
+import Navbar from '../shared/Navbar';
+import { Input } from '../ui/input';
+import { Button } from '../ui/button'; 
+import { useNavigate } from 'react-router-dom'; 
+import { useDispatch } from 'react-redux'; 
+import AdminJobsTable from './AdminJobsTable';
+import { setSearchJobByText } from '@/redux/jobSlice';
+import API from "../utils/axiosConfig";
 
 const AdminJobs = () => {
-  useGetAllAdminJobs();
   const [input, setInput] = useState("");
+  const [jobs, setJobs] = useState([]);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  // Fetch all admin jobs
+  useEffect(() => {
+    const fetchAdminJobs = async () => {
+      try {
+        const response = await API.get("/job/admin"); // Update endpoint if needed
+        setJobs(response.data.jobs);
+      } catch (error) {
+        console.error("Failed to fetch jobs:", error.response?.data?.message || error.message);
+      }
+    };
+    
+    fetchAdminJobs();
+  }, []);
+
   useEffect(() => {
     dispatch(setSearchJobByText(input));
-  }, [input]);
+  }, [input, dispatch]);
+
   return (
     <div>
       <Navbar />
@@ -29,10 +44,11 @@ const AdminJobs = () => {
           />
           <Button onClick={() => navigate("/admin/jobs/create")}>New Jobs</Button>
         </div>
-        <AdminJobsTable />
+        {/* Pass fetched jobs to AdminJobsTable */}
+        <AdminJobsTable jobs={jobs} />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AdminJobs
+export default AdminJobs;
