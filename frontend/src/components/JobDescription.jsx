@@ -7,7 +7,7 @@ import { setSingleJob } from '@/redux/jobSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import api from '../utils/axiosConfig'; // ✅ Using api instead of axios
+import api from '@/utils/axiosConfig'; // ✅ Using api instead of axios
 
 const JobDescription = () => {
     const navigate = useNavigate();

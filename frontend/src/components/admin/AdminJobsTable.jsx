@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Eye, MoreHorizontal } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import API from "../utils/axiosConfig";
+import API from "@/utils/axiosConfig";
 
 const AdminJobsTable = () => { 
     const { allAdminJobs, searchJobByText } = useSelector(store => store.job);

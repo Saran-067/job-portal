@@ -8,7 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { USER_API_END_POINT } from '@/utils/constant';
 import { setUser } from '@/redux/authSlice';
 import { toast } from 'sonner';
-import api from '../utils/axiosConfig'; // ✅ Using api instead of axios
+import api from '@/utils/axiosConfig'; // ✅ Using api instead of axios
 
 const UpdateProfileDialog = ({ open, setOpen }) => {
     const [loading, setLoading] = useState(false);

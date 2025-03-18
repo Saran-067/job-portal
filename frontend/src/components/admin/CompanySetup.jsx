@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useDispatch } from 'react-redux';
 import { setSingleCompany } from '@/redux/companySlice';
-import API from "../utils/axiosConfig"; // ✅ Use API instance
+import API from "@/utils/axiosConfig"; // ✅ Use API instance
 import { COMPANY_API_END_POINT } from '@/utils/constant';
 
 const CompanyCreate = () => {

@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import API from "../utils/axiosConfig";
+import API from "@/utils/axiosConfig";
 import { JOB_API_END_POINT } from '@/utils/constant';
 
 // Predefined options
