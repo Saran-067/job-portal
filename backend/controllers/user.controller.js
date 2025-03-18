@@ -3,20 +3,17 @@ import bcrypt from "bcryptjs";
 import getDataUri from "../utils/datauri.js";
 import cloudinary from "../utils/cloudinary.js";
 
+// ✅ User Registration
 export const register = async (req, res) => {
     try {
         const { fullname, email, phoneNumber, password, role } = req.body;
-         
+
         if (!fullname || !email || !phoneNumber || !password || !role) {
             return res.status(400).json({
-                message: "Something is missing",
+                message: "All fields are required.",
                 success: false
             });
         }
-
-        const file = req.file;
-        const fileUri = getDataUri(file);
-        const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -28,35 +25,51 @@ export const register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        await User.create({
+        let profilePhotoUrl = null;
+        if (req.file) {
+            const fileUri = getDataUri(req.file);
+            const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+            profilePhotoUrl = cloudResponse.secure_url;
+        }
+
+        const newUser = await User.create({
             fullname,
             email,
             phoneNumber,
             password: hashedPassword,
             role,
             profile: {
-                profilePhoto: cloudResponse.secure_url,
+                profilePhoto: profilePhotoUrl,
             }
         });
 
         return res.status(201).json({
             message: "Account created successfully.",
-            success: true
+            success: true,
+            user: {
+                _id: newUser._id,
+                fullname: newUser.fullname,
+                email: newUser.email,
+                phoneNumber: newUser.phoneNumber,
+                role: newUser.role,
+                profile: newUser.profile
+            }
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("Registration Error:", error);
         res.status(500).json({ message: "Internal Server Error", success: false });
     }
 };
 
+// ✅ User Login
 export const login = async (req, res) => {
     try {
         const { email, password, role } = req.body;
-        
+
         if (!email || !password || !role) {
             return res.status(400).json({
-                message: "Something is missing",
+                message: "All fields are required.",
                 success: false
             });
         }
@@ -77,44 +90,45 @@ export const login = async (req, res) => {
             });
         }
 
-        // Check if the role matches
         if (role !== user.role) {
             return res.status(400).json({
-                message: "Account doesn't exist with the current role.",
+                message: "Account doesn't exist with the selected role.",
                 success: false
             });
         }
 
-        // Store user ID in session
+        // ✅ Store userId in session & force session save
         req.session.userId = user._id;
         req.session.role = user.role;
-
-        user = {
-            _id: user._id,
-            fullname: user.fullname,
-            email: user.email,
-            phoneNumber: user.phoneNumber,
-            role: user.role,
-            profile: user.profile
-        };
+        req.session.save((err) => {
+            if (err) console.error("Session save error:", err);
+        });
 
         return res.status(200).json({
             message: `Welcome back, ${user.fullname}`,
-            user,
+            user: {
+                _id: user._id,
+                fullname: user.fullname,
+                email: user.email,
+                phoneNumber: user.phoneNumber,
+                role: user.role,
+                profile: user.profile
+            },
             success: true
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("Login Error:", error);
         res.status(500).json({ message: "Internal Server Error", success: false });
     }
 };
 
+// ✅ User Logout
 export const logout = async (req, res) => {
     try {
         req.session.destroy((err) => {
             if (err) {
-                console.error(err);
+                console.error("Logout Error:", err);
                 return res.status(500).json({ message: "Logout failed.", success: false });
             }
             res.clearCookie("connect.sid"); // Remove session cookie
@@ -124,22 +138,24 @@ export const logout = async (req, res) => {
             });
         });
     } catch (error) {
-        console.error(error);
+        console.error("Logout Error:", error);
         res.status(500).json({ message: "Internal Server Error", success: false });
     }
 };
 
+// ✅ Update User Profile
 export const updateProfile = async (req, res) => {
     try {
-        const { fullname, email, phoneNumber, bio, skills } = req.body;
+        console.log("Session Data:", req.session); // Debugging session
 
-        if (!req.session.userId) {
+        if (!req.session || !req.session.userId) {
             return res.status(401).json({
                 message: "User not authenticated.",
                 success: false
             });
         }
 
+        const { fullname, email, phoneNumber, bio, skills } = req.body;
         const file = req.file;
         let cloudResponse;
 
@@ -154,13 +170,13 @@ export const updateProfile = async (req, res) => {
         let user = await User.findById(userId);
 
         if (!user) {
-            return res.status(400).json({
+            return res.status(404).json({
                 message: "User not found.",
                 success: false
             });
         }
 
-        // Updating data
+        // Updating user fields
         if (fullname) user.fullname = fullname;
         if (email) user.email = email;
         if (phoneNumber) user.phoneNumber = phoneNumber;
@@ -175,23 +191,21 @@ export const updateProfile = async (req, res) => {
 
         await user.save();
 
-        user = {
-            _id: user._id,
-            fullname: user.fullname,
-            email: user.email,
-            phoneNumber: user.phoneNumber,
-            role: user.role,
-            profile: user.profile
-        };
-
         return res.status(200).json({
             message: "Profile updated successfully.",
-            user,
+            user: {
+                _id: user._id,
+                fullname: user.fullname,
+                email: user.email,
+                phoneNumber: user.phoneNumber,
+                role: user.role,
+                profile: user.profile
+            },
             success: true
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("Update Profile Error:", error);
         res.status(500).json({ message: "Internal Server Error", success: false });
     }
 };
