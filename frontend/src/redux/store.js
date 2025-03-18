@@ -1,6 +1,10 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import authSlice from "./authSlice";
 import jobSlice from "./jobSlice";
+import axios from "axios";
+
+
+
 import {
     persistStore,
     persistReducer,
@@ -14,7 +18,7 @@ import {
 import storage from 'redux-persist/lib/storage'
 import companySlice from "./companySlice";
 import applicationSlice from "./applicationSlice";
-
+axios.defaults.withCredentials = true;
 const persistConfig = {
     key: 'root',
     version: 1,
