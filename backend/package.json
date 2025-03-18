@@ -32,4 +32,9 @@
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.6"
   }
+  ,
+  "scripts": {
+    "start": "node index.js", 
+    "build": "vite build" 
+  }
 }
