@@ -1,6 +1,13 @@
-const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 
-// Generate a 256-bit (32-byte) random secret key and convert it to hex format
-const secretKey = crypto.randomBytes(32).toString('hex');
+// Your secret key (this must match the server's secret key)
+const secretKey = `2254d5476a84672ba55fb7597eb0e957c28acf98885387c2dba17239f3a5cb20`;
 
-console.log('Generated Secret Key:', secretKey);
+// Timestamp string (this is the string to sign exactly as the error message says)
+const timestamp = 1742088413;
+const stringToSign = `timestamp=${timestamp}`;
+
+// To create the JWT, we need to sign the string `timestamp=1742088413`
+const signature = jwt.sign(stringToSign, secretKey, { algorithm: 'HS256' });
+
+console.log(`Generated JWT: ${signature}`);
