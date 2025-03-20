@@ -1,6 +1,7 @@
-const crypto = require('crypto');
-
-// Generate a 256-bit (32-byte) random secret key and convert it to hex format
-const secretKey = crypto.randomBytes(32).toString('hex');
-
-console.log('Generated Secret Key:', secretKey);
+import cors from 'cors';
+import express from 'express';
+const app = express();
+app.use(cors({
+  origin: 'http://localhost:5173', // Frontend URL
+  credentials: true, // Allows session cookies
+}));
